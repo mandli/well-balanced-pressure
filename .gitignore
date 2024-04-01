@@ -1,3 +1,17 @@
+# GeoClaw stuff
+.data
+*.data
+.output
+_output
+.plots
+_plots
+*.storm
+pyclaw.log
+xgeoclaw
+
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
