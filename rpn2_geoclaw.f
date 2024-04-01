@@ -39,6 +39,8 @@ c
 
       use storm_module, only: pressure_forcing, pressure_index
 
+      use pressure_module, only: split_pressure
+
       implicit none
 
       !input
@@ -123,11 +125,13 @@ c        !set normal direction
          bL = auxr(1,i-1)
          bR = auxl(1,i)
          if (pressure_forcing) then
-             ! pL = auxr(pressure_index, i-1)
-             ! pR = auxl(pressure_index, i)
-             ! Set to 0 again (more for reading)
-             pL = 0.0d0
-             pR = 0.0d0
+            if (split_pressure) then
+                 pL = 0.0d0
+                 pR = 0.0d0
+            else
+                 pL = auxr(pressure_index, i-1)
+                 pR = auxl(pressure_index, i)
+             end if
          end if
 
          hvL=qr(nv,i-1) 

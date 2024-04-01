@@ -15,6 +15,8 @@ subroutine src2(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux,t,dt)
 
     use friction_module, only: variable_friction, friction_index
 
+    use pressure_module, only: split_pressure
+
     implicit none
     
     ! Input parameters
@@ -165,7 +167,7 @@ subroutine src2(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux,t,dt)
 
     ! Atmosphere Pressure --------------------------------------------
     ! Handled here in this version
-    if (pressure_forcing) then
+    if (pressure_forcing .and. split_pressure) then
         do j=1,my  
             ym = ylower + (j - 1.d0) * dy
             yc = ylower + (j - 0.5d0) * dy

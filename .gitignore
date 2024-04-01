@@ -1,4 +1,6 @@
 # GeoClaw stuff
+*.o
+*.mod
 .data
 *.data
 .output

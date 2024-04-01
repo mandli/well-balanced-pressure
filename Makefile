@@ -38,14 +38,8 @@ include $(GEOLIB)/Makefile.geoclaw
 EXCLUDE_MODULES = \
 
 EXCLUDE_SOURCES = \
-
-SPLIT=F
-ifeq ($(SPLIT), T)
-  $(info Using split pressure source term.)
-  $(info Note:  You may need to 'make new' to include the correct source code.)
-  EXCLUDE_SOURCES = \
-    src2.f90
-endif
+  src2.f90 \
+  setprob.f90
 
 # ----------------------------------------
 # List of custom sources for this program:
@@ -54,19 +48,15 @@ endif
 RIEMANN = $(CLAW)/riemann/src
 
 MODULES = \
+  ./pressure_module.f90
 
 SOURCES = \
-  $(RIEMANN)/rpn2_geoclaw.f \
+  ./rpn2_geoclaw.f \
+  ./src2.f90 \
+  ./setprob.f90 \
   $(RIEMANN)/rpt2_geoclaw.f \
-  $(RIEMANN)/geoclaw_riemann_utils.f \
+  $(RIEMANN)/geoclaw_riemann_utils.f
 
-ifdef SPLIT
-  SOURCES = \
-    ./rpn2_geoclaw.f \
-    ./src2.f90 \
-    $(RIEMANN)/rpt2_geoclaw.f \
-    $(RIEMANN)/geoclaw_riemann_utils.f
-endif
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:
