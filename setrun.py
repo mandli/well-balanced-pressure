@@ -239,8 +239,8 @@ def setrun(claw_pkg='geoclaw'):
     #   2 => periodic (must specify this at both boundaries)
     #   3 => solid wall for systems where q(2) is normal velocity
 
-    clawdata.bc_lower[0] = 'wall'
-    clawdata.bc_upper[0] = 'wall'
+    clawdata.bc_lower[0] = 'extrap'
+    clawdata.bc_upper[0] = 'extrap'
 
     clawdata.bc_lower[1] = 'wall'
     clawdata.bc_upper[1] = 'wall'
@@ -326,17 +326,17 @@ def setrun(claw_pkg='geoclaw'):
     num_gauges = 11
     for i in range(num_gauges):
         n = i + num_gauges * 2
-        rundata.gaugedata.gauges.append([n, 1000e3 / (num_gauges - 1) * (i - 0.0), 
+        rundata.gaugedata.gauges.append([n, 2000e3 / (num_gauges - 1) * (i - 0.0), 
                                             -250e3, 
-                                            0.0, rundata.clawdata.tfinal])
+                                            rundata.clawdata.t0, rundata.clawdata.tfinal])
         n = i
-        rundata.gaugedata.gauges.append([n, 1000e3 / (num_gauges - 1) * (i - 0.0), 
+        rundata.gaugedata.gauges.append([n, 2000e3 / (num_gauges - 1) * (i - 0.0), 
                                             0.0, 
-                                            0.0, rundata.clawdata.tfinal])
+                                            rundata.clawdata.t0, rundata.clawdata.tfinal])
         n = i + num_gauges
-        rundata.gaugedata.gauges.append([n, 1000e3 / (num_gauges - 1) * (i - 0.0), 
+        rundata.gaugedata.gauges.append([n, 2000e3 / (num_gauges - 1) * (i - 0.0), 
                                             250e3, 
-                                            0.0, rundata.clawdata.tfinal])
+                                            rundata.clawdata.t0, rundata.clawdata.tfinal])
 
     # Force the gauges to also record the wind and pressure fields
     rundata.gaugedata.aux_out_fields = [4, 5, 6]
@@ -433,7 +433,8 @@ def setgeo(rundata):
                            -2 / c**3 * t**3 - 3 / c**2 * t**2 + 1, 
                            numpy.ones(t.shape))
     def storm_x(t):
-        storm_v = 10e3
+        # storm_v = 10e3
+        storm_v = 0
         return -50e3 + storm_v * t / 60**2
 
 
