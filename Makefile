@@ -36,6 +36,8 @@ include $(GEOLIB)/Makefile.geoclaw
 # ---------------------------------------
 
 EXCLUDE_MODULES = \
+  model_storm_module.f90 \
+  storm_module.f90
 
 EXCLUDE_SOURCES = \
   src2.f90 \
@@ -48,6 +50,8 @@ EXCLUDE_SOURCES = \
 RIEMANN = $(CLAW)/riemann/src
 
 MODULES = \
+  ./model_storm_module.f90 \
+  ./storm_module.f90 \
   ./pressure_module.f90
 
 SOURCES = \
