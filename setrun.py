@@ -89,7 +89,7 @@ def setrun(claw_pkg='geoclaw'):
     clawdata.upper[1] =  100e3 * 10    # north latitude
 
     # Number of grid cells:
-    clawdata.num_cells[0] = 400
+    clawdata.num_cells[0] = 300
     clawdata.num_cells[1] = 200
 
     # ---------------
@@ -239,7 +239,7 @@ def setrun(claw_pkg='geoclaw'):
     #   2 => periodic (must specify this at both boundaries)
     #   3 => solid wall for systems where q(2) is normal velocity
 
-    clawdata.bc_lower[0] = 'extrap'
+    clawdata.bc_lower[0] = 'wall'
     clawdata.bc_upper[0] = 'extrap'
 
     clawdata.bc_lower[1] = 'wall'
@@ -336,6 +336,9 @@ def setrun(claw_pkg='geoclaw'):
         n = i + num_gauges
         rundata.gaugedata.gauges.append([n, 2000e3 / (num_gauges - 1) * (i - 0.0), 
                                             250e3, 
+                                            rundata.clawdata.t0, rundata.clawdata.tfinal])
+
+    rundata.gaugedata.gauges.append([100, -100e3, 0.0,
                                             rundata.clawdata.t0, rundata.clawdata.tfinal])
 
     # Force the gauges to also record the wind and pressure fields
@@ -469,7 +472,7 @@ def setgeo(rundata):
 
     # Pressure source term splitting
     rundata.add_data(PressureData(), 'pressure_data')
-    rundata.pressure_data.split_pressure = True
+    rundata.pressure_data.split_pressure = False
 
     return rundata
     # end of function setgeo
