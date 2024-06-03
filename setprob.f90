@@ -1,10 +1,10 @@
 subroutine setprob()
 
-    use pressure_module, only: set_pressure
+    use splitting_module, only: set_splitting
 
     implicit none
 
-    call set_pressure()
+    call set_splitting()
 
 end subroutine setprob
 

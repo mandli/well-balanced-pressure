@@ -6,7 +6,7 @@ subroutine src2(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux,t,dt)
     use geoclaw_module, only: manning_break, num_manning
     use geoclaw_module, only: spherical_distance, coordinate_system
     use geoclaw_module, only: RAD2DEG, pi, dry_tolerance, DEG2RAD
-    use geoclaw_module, only: rho_air
+    use geoclaw_module, only: rho_air, rho
     use geoclaw_module, only: earth_radius, sphere_source
       
     use storm_module, only: wind_forcing, pressure_forcing, wind_drag
@@ -15,7 +15,7 @@ subroutine src2(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux,t,dt)
 
     use friction_module, only: variable_friction, friction_index
 
-    use pressure_module, only: split_pressure
+    use splitting_module, only: split_forcing, test_type
 
     implicit none
     
@@ -36,15 +36,13 @@ subroutine src2(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux,t,dt)
     real(kind=8) :: Ddt, sloc(2)
     real(kind=8) :: tanyR, huv, huu, hvv
 
+    real(kind=8) :: b_gradient(2)
+
     ! Algorithm parameters
 
     ! Parameter controls when to zero out the momentum at a depth in the
     ! friction source term
     real(kind=8), parameter :: depth_tolerance = 1.0d-30
-
-    ! Physics
-    ! Nominal density of water
-    real(kind=8), parameter :: rho = 1025.d0
 
     ! ----------------------------------------------------------------
     ! Spherical geometry source term(s)
@@ -156,7 +154,7 @@ subroutine src2(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux,t,dt)
                     endif
                     wind_speed = sqrt(aux(wind_index,i,j)**2        &
                                     + aux(wind_index+1,i,j)**2)
-                    tau = wind_drag(wind_speed, phi) * rho_air * wind_speed / rho
+                    tau = wind_drag(wind_speed, phi) * rho_air * wind_speed / rho(1)
                     q(2,i,j) = q(2,i,j) + dt * tau * aux(wind_index,i,j)
                     q(3,i,j) = q(3,i,j) + dt * tau * aux(wind_index+1,i,j)
                 endif
@@ -167,7 +165,7 @@ subroutine src2(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux,t,dt)
 
     ! Atmosphere Pressure --------------------------------------------
     ! Handled here in this version
-    if (pressure_forcing .and. split_pressure) then
+    if (pressure_forcing .and. split_forcing .and. test_type == 1) then
         do j=1,my  
             ym = ylower + (j - 1.d0) * dy
             yc = ylower + (j - 0.5d0) * dy
@@ -190,6 +188,10 @@ subroutine src2(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux,t,dt)
                 h = q(1,i,j)
 
                 ! Calculate gradient of Pressure
+                P_gradient = 0.d0
+                ! if (abs(xp - 0.5) < 0.1) then
+                !     P_gradient(1) = -2.5d0 * PI * g * rho(1) * sin(PI * (xp - 0.5d0) / 0.1d0)
+                ! end if
                 P_gradient(1) = (aux(pressure_index,i+1,j) &
                                - aux(pressure_index,i-1,j)) / (2.d0 * dx_meters)
                 P_gradient(2) = (aux(pressure_index,i,j+1) &
@@ -197,11 +199,65 @@ subroutine src2(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux,t,dt)
 
                 ! Modify momentum
                 if (h > dry_tolerance) then
-                    q(2, i, j) = q(2, i, j) - dt * h * P_gradient(1) / rho
-                    q(3, i, j) = q(3, i, j) - dt * h * P_gradient(2) / rho
+                    q(2, i, j) = q(2, i, j) - dt * h * P_gradient(1) / rho(1)
+                    q(3, i, j) = q(3, i, j) - dt * h * P_gradient(2) / rho(1)
                 end if
             enddo
         enddo
     endif
+
+    ! Handle bathy source term here
+    if (split_forcing .and. test_type == 2) then
+        do j=1,my  
+            ym = ylower + (j - 1.d0) * dy
+            yc = ylower + (j - 0.5d0) * dy
+            yp = ylower + j * dy
+            do i=1,mx  
+                xm = xlower + (i - 1.d0) * dx
+                xc = xlower + (i - 0.5d0) * dx
+                xp = xlower + i * dx
+
+                if (coordinate_system == 2) then
+                    ! Convert distance in lat-long to meters
+                    dx_meters = spherical_distance(xp,yc,xm,yc)
+                    dy_meters = spherical_distance(xc,yp,xc,ym)
+                else
+                    dx_meters = dx
+                    dy_meters = dy
+                endif
+
+                h = q(1, i, j)
+                b_gradient = 0.d0
+                ! if (abs(xp - 0.5d0) < 0.1d0) then
+                !     b_gradient(1) = -2.5d0 * PI * sin(PI * (xp - 0.5d0) / 0.1d0)
+                ! end if
+                ! b_gradient(1) = (bathy(xp, yc) - bathy(xm, yc)) / (2.d0 * dx_meters)
+                ! b_gradient(2) = (bathy(xc, yp) - bathy(xc, ym)) / (2.d0 * dy_meters)
+                b_gradient(1) = (aux(1,i+1,j) - aux(1,i-1,j)) / (2.d0 * dx_meters)
+                b_gradient(2) = (aux(1,i,j+1) - aux(1,i,j-1)) / (2.d0 * dy_meters)
+
+                if (h > dry_tolerance) then
+                    q(2, i, j) = q(2, i, j) - dt * g * h * b_gradient(1)
+                    q(3, i, j) = q(3, i, j) - dt * g * h * b_gradient(2)
+                end if
+            end do
+        end do
+    end if
+
+contains
+
+    real(kind=8) pure function bathy(x, y) result(topo)
+        implicit none
+
+        real(kind=8), intent(in) :: x, y
+        real(kind=8), parameter :: PI = 3.141592654d0
+
+        if (abs(x - 0.5) < 0.1) then
+            topo = -1.d0 + 0.25d0 * (cos(PI * (x - 0.5d0) / 0.1d0) + 1d0)
+        else
+            topo = -1.d0
+        end if
+
+    end function bathy
 
 end subroutine src2

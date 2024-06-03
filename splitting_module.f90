@@ -1,15 +1,16 @@
-module pressure_module
+module splitting_module
 
     implicit none
     save
 
     logical, private :: module_setup = .false.
 
-    logical :: split_pressure = .false.
+    integer :: test_type = 0
+    logical :: split_forcing = .false.
 
 contains
 
-    subroutine set_pressure(data_file)
+    subroutine set_splitting(data_file)
 
         implicit none
 
@@ -23,16 +24,17 @@ contains
             if (present(data_file)) then
                 call opendatafile(unit, data_file)
             else
-                call opendatafile(unit, 'pressure.data')
+                call opendatafile(unit, 'splitting.data')
             endif
 
-            read(unit, *) split_pressure
+            read(unit, *) split_forcing
+            read(unit, *) test_type
 
             close(unit)
             module_setup = .true.
 
         end if
 
-    end subroutine set_pressure
+    end subroutine set_splitting
 
-end module pressure_module
+end module splitting_module

@@ -39,7 +39,7 @@ c
 
       use storm_module, only: pressure_forcing, pressure_index
 
-      use pressure_module, only: split_pressure
+      use splitting_module, only: split_forcing, test_type
 
       implicit none
 
@@ -117,21 +117,26 @@ c        !set normal direction
             go to 30
          endif
 
-         !Riemann problem variables
+         ! Riemann problem variables
          hL = qr(1,i-1) 
          hR = ql(1,i) 
          huL = qr(mu,i-1) 
          huR = ql(mu,i) 
-         bL = auxr(1,i-1)
-         bR = auxl(1,i)
          if (pressure_forcing) then
-            if (split_pressure) then
+            if (split_forcing) then
                  pL = 0.0d0
                  pR = 0.0d0
             else
                  pL = auxr(pressure_index, i-1)
                  pR = auxl(pressure_index, i)
              end if
+         end if
+         if (split_forcing) then
+             bL = -1.d0
+             bR = -1.d0
+         else
+             bL = auxr(1,i-1)
+             bR = auxl(1,i)
          end if
 
          hvL=qr(nv,i-1) 
