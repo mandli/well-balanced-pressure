@@ -38,6 +38,7 @@ include $(GEOLIB)/Makefile.geoclaw
 EXCLUDE_MODULES = \
 
 EXCLUDE_SOURCES = \
+  bc2amr.f90 \
   setprob.f90 \
   setaux.f90 \
   b4step2.f90 \
@@ -51,18 +52,20 @@ EXCLUDE_SOURCES = \
 RIEMANN = $(CLAW)/riemann/src
 
 MODULES = \
-  ./splitting_module.f90
+  ../splitting_module.f90
 
 SOURCES = \
-  ./setprob.f90 \
+  $(RIEMANN)/rpt2_geoclaw.f \
+  $(RIEMANN)/geoclaw_riemann_utils.f \
+  ../rpn2_geoclaw.f \
+  ../setprob.f90 \
+  ../src2.f90 \
+  ./bc2amr.f90 \
   ./setaux.f90 \
   ./qinit.f90 \
-  ./b4step2.f90 \
-  ./bc2amr.f90 \
-  ./src2.f90 \
-  ./rpn2_geoclaw.f \
-  $(RIEMANN)/rpt2_geoclaw.f \
-  $(RIEMANN)/geoclaw_riemann_utils.f
+  ./b4step2.f90
+
+
 
 
 #-------------------------------------------------------------------

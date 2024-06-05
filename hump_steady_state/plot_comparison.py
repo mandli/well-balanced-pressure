@@ -18,7 +18,7 @@ def load_solution(path, frame=10, y0=0.0):
     return x, q[:, :, index]
 
 
-def plot_comparison(base_path, ax, field=3, title=None, 
+def plot_comparison(base_path, ax, field=3, title=None, dimensional=True,
                                    colors=['red', 'red', 'black', 'black'], 
                                    markers=['o', 'x', 'o', 'x']):
 
@@ -29,7 +29,8 @@ def plot_comparison(base_path, ax, field=3, title=None,
     for split in [True, False]:
         for test_type in ["pressure", "bathymetry"]:
             i += 1
-            path = os.path.join(base_path, f"{str(split)[0]}_{test_type}_output")
+            path = os.path.join(base_path, 
+                f"{str(split)[0]}_{str(dimensional)[0]}_{test_type}_output")
             x, q = load_solution(path)
             if field < 0:
                 values = np.where(q[0, :] >1e-3, q[abs(field), :] / q[0, :], np.zeros(q.shape[1]))
@@ -46,13 +47,29 @@ def plot_comparison(base_path, ax, field=3, title=None,
 
 
 if __name__ == '__main__':
-    base_path = os.path.expandvars(os.path.join("${DATA_PATH}", "split_source"))
+    base_path = os.path.expandvars(os.path.join("${DATA_PATH}", 
+                                                "well-balanced-pressure", 
+                                                "hump"))
+    for dimensional in [True, False]:
+        fig, axs = plt.subplots(2, 2)
+        fig.set_figwidth(fig.get_figwidth() * 2)
+        fig.set_figheight(fig.get_figheight() * 2)
+        plot_comparison(base_path, axs[0, 0], dimensional=dimensional, 
+                                              field=0, 
+                                              title='Depth')
+        plot_comparison(base_path, axs[0, 1], dimensional=dimensional, 
+                                              field=3, 
+                                              title='Surface')
+        plot_comparison(base_path, axs[1, 0], dimensional=dimensional, 
+                                              field=1, 
+                                              title='Momentum')
+        plot_comparison(base_path, axs[1, 1], dimensional=dimensional, 
+                                              field=-1, 
+                                              title='Velocity')
+        if dimensional:
+            fig.suptitle("Dimensional")
+        else:
+            fig.suptitle("Non-Dimensional")
+        fig.savefig(f"comparison_dim{str(dimensional)[0]}.pdf")
 
-    fig, axs = plt.subplots(2, 2)
-    fig.set_figwidth(fig.get_figwidth() * 2)
-    fig.set_figheight(fig.get_figheight() * 2)
-    plot_comparison(base_path, axs[0, 0], field=0, title='Depth')
-    plot_comparison(base_path, axs[0, 1], field=3, title='Surface')
-    plot_comparison(base_path, axs[1, 0], field=1, title='Momentum')
-    plot_comparison(base_path, axs[1, 1], field=-1, title='Velocity')
-    fig.savefig("comparison.pdf")
+    plt.show()

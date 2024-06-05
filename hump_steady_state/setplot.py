@@ -74,7 +74,7 @@ def setplot(plotdata=None):
     plotaxes.title = "Surface"
     plotaxes.xlimits = (clawdata.lower[0], clawdata.upper[0])
     plotaxes.ylimits = (clawdata.lower[1], clawdata.upper[1])
-    plotaxes.afteraxes = surge_afteraxes
+    # plotaxes.afteraxes = surge_afteraxes
 
     surgeplot.add_surface_elevation(plotaxes, bounds=surface_limits)
     surgeplot.add_land(plotaxes, bounds=[0.0, 20.0])
@@ -89,7 +89,7 @@ def setplot(plotdata=None):
     plotaxes.title = "Currents"
     plotaxes.xlimits = (clawdata.lower[0], clawdata.upper[0])
     plotaxes.ylimits = (clawdata.lower[1], clawdata.upper[1])
-    plotaxes.afteraxes = surge_afteraxes
+    # plotaxes.afteraxes = surge_afteraxes
 
     surgeplot.add_speed(plotaxes, bounds=speed_limits)
     surgeplot.add_land(plotaxes, bounds=[0.0, 20.0])
@@ -104,7 +104,7 @@ def setplot(plotdata=None):
     plotaxes.xlimits = (clawdata.lower[0], clawdata.upper[0])
     plotaxes.ylimits = (clawdata.lower[1], clawdata.upper[1])
     plotaxes.title = "Pressure Field"
-    plotaxes.afteraxes = surge_afteraxes
+    # plotaxes.afteraxes = surge_afteraxes
     plotaxes.scaled = True
     surgeplot.add_pressure(plotaxes, bounds=pressure_limits)
     surgeplot.add_land(plotaxes, bounds=[0.0, 20.0])
@@ -181,7 +181,7 @@ def setplot(plotdata=None):
     plotaxes.xlabel = "x (m)"
     plotaxes.ylabel = r"$hu$"
     plotaxes.xlimits = [clawdata.lower[0], clawdata.upper[0]]
-    plotaxes.ylimits = [0.0, 0.35]
+    # plotaxes.ylimits = [0.0, 0.35]
     plotaxes.grid = True
     plotaxes.afteraxes = lambda cd: compute_max(cd, field=1)
 

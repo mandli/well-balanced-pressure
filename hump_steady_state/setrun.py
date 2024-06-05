@@ -329,7 +329,7 @@ def setrun(claw_pkg='geoclaw'):
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
     rundata.gaugedata.gauges.append([1, 0.0, 0.0, rundata.clawdata.t0, rundata.clawdata.tfinal])
     rundata.gaugedata.gauges.append([2, 0.5, 0.0, rundata.clawdata.t0, rundata.clawdata.tfinal])
-    rundata.gaugedata.gauges.append([3, 1.0, 0.0, rundata.clawdata.t0, rundata.clawdata.tfinal])
+    rundata.gaugedata.gauges.append([3, 0.8, 0.0, rundata.clawdata.t0, rundata.clawdata.tfinal])
     # num_gauges = 11
     # for i in range(num_gauges):
     #     n = i + num_gauges * 2
