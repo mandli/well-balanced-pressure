@@ -10,14 +10,13 @@ that will be read in by the Fortran code.
 import os
 import datetime
 import shutil
-import gzip
 
 import numpy as np
 
 import clawpack.clawutil.data as data
 from clawpack.geoclaw.surge.storm import Storm
 import clawpack.clawutil as clawutil
-
+import clawpack.geoclaw.units as units
 
 # Time Conversions
 def days2seconds(days):
@@ -90,13 +89,13 @@ def setrun(claw_pkg="geoclaw"):
 
     # Lower and upper edge of computational domain:
     clawdata.lower[0] = -500e3
-    clawdata.upper[0] = 500e3
+    clawdata.upper[0] = 500e3 * 2
 
     clawdata.lower[1] = -500e3
     clawdata.upper[1] = 500e3
 
     # Number of grid cells:
-    clawdata.num_cells[0] = 200
+    clawdata.num_cells[0] = 300
     clawdata.num_cells[1] = 200
 
     # ---------------
@@ -136,11 +135,12 @@ def setrun(claw_pkg="geoclaw"):
     # The solution at initial time t0 is always written in addition.
 
     clawdata.output_style = 1
-    clawdata.tfinal = days2seconds(5)
+    clawdata.tfinal = days2seconds(1)
 
     if clawdata.output_style == 1:
         # Output nout frames at equally spaced times up to tfinal:
-        clawdata.num_output_times = 24
+        recurrence = 4
+        clawdata.num_output_times = int((clawdata.tfinal - clawdata.t0) / 8.64e4) * recurrence
 
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
@@ -166,7 +166,7 @@ def setrun(claw_pkg="geoclaw"):
     # The current t, dt, and cfl will be printed every time step
     # at AMR levels <= verbosity.  Set verbosity = 0 for no printing.
     #   (E.g. verbosity == 2 means print only on levels 1 and 2.)
-    clawdata.verbosity = 0
+    clawdata.verbosity = 1
 
     # --------------
     # Time stepping:
@@ -323,7 +323,7 @@ def setrun(claw_pkg="geoclaw"):
     amrdata.uprint = False  # update/upbnd reporting
 
     # More AMR parameters can be set -- see the defaults in pyclaw/data.py
-    amrdata.max1d = 1000
+    # amrdata.max1d = 1000
 
     # == setregions.data values ==
     regions = rundata.regiondata.regions
@@ -394,8 +394,8 @@ def setgeo(rundata):
     topo_data.x1 = rundata.clawdata.lower[0] + 2e8
     topo_data.x2 = rundata.clawdata.lower[0] + 3e8
 
-    topo_data.basin_depth = -1.0
-    topo_data.shelf_depth = -1.0
+    topo_data.basin_depth = -1000.0
+    topo_data.shelf_depth = -1000.0
     topo_data.beach_slope = 0.05
 
     # Indexing
@@ -412,6 +412,7 @@ def setgeo(rundata):
 
     # Storm parameters - Parameterized storm (Holland 1980)
     data.storm_specification_type = "holland80"
+    data.display_landfall_time = True
     data.storm_file = os.path.join(os.getcwd(), "synthetic.storm")
 
     # Construct synthetic storm
@@ -445,13 +446,19 @@ def setgeo(rundata):
             - 145.5090 * np.cos(storm.eye_location[n, 1] * 0.0174533)
         ) * 1e3
 
-    # Add central pressure - From Kossin, J. P. WAF 2015
-    a = -0.0025
-    b = -0.36
-    c = 1021.36
+    # Constant central pressure
     storm.central_pressure = geo_data.ambient_pressure - (
-        geo_data.ambient_pressure - 940e2
-    ) * ramp_function(storm.t)
+        geo_data.ambient_pressure - 940e2) * ramp_function(storm.t)
+    
+    # Add central pressure - From Kossin, J. P. WAF 2015
+    # a = -0.0025
+    # b = -0.36
+    # c = 1021.36
+    # storm.central_pressure = np.empty(num_forecasts)
+    # for (n, t) in enumerate(storm.t):
+    #     storm.central_pressure[n] = ( a * storm.max_wind_speed[n]**2 
+    #             + b * storm.max_wind_speed[n] + c)
+    # storm.central_pressure = units.convert(storm.central_pressure, "mbar", 'Pa')
 
     # Extent of storm set to 300 km
     storm.storm_radius = 300e3 * np.ones(num_forecasts)
@@ -461,7 +468,7 @@ def setgeo(rundata):
 
     # Pressure source term splitting
     rundata.add_data(SplittingData(), "splitting_data")
-    rundata.splitting_data.split_forcing = False
+    rundata.splitting_data.split_forcing = True
     rundata.splitting_data.test_type = "pressure"
 
     return rundata

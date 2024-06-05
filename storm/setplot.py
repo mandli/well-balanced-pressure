@@ -59,6 +59,7 @@ def setplot(plotdata=None):
 
     # Color limits
     surface_limits = [-1, 1]
+    H = 1000.0
     speed_limits = [0.0, 1.0]
     pressure_limits = [935, 1013]
 
@@ -143,7 +144,7 @@ def setplot(plotdata=None):
     plotaxes.xlabel = "x (m)"
     plotaxes.ylabel = r"$\eta$"
     plotaxes.xlimits = [clawdata.lower[0], clawdata.upper[0]]
-    plotaxes.ylimits = [-1.1, 0.1]
+    plotaxes.ylimits = surface_limits
     plotaxes.grid = True
     plotaxes.afteraxes = lambda cd: compute_max(cd)
 
@@ -159,13 +160,13 @@ def setplot(plotdata=None):
 
     # === Depth ===
     plotfigure = plotdata.new_plotfigure(name="Depth Transect")
-    plotfigure.show = True
+    plotfigure.show = False
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.title = "Depth Transect"
     plotaxes.xlabel = "x (m)"
     plotaxes.ylabel = r"$h$"
     plotaxes.xlimits = [clawdata.lower[0], clawdata.upper[0]]
-    # plotaxes.ylimits = [0.9, 1.1]
+    plotaxes.ylimits = [H + surface_limits[0], H + surface_limits[1]]
     plotaxes.grid = True
     plotaxes.afteraxes = lambda cd: compute_max(cd, field=0)
 
@@ -182,14 +183,14 @@ def setplot(plotdata=None):
     plotaxes.xlabel = "x (m)"
     plotaxes.ylabel = r"$hu$"
     plotaxes.xlimits = [clawdata.lower[0], clawdata.upper[0]]
-    plotaxes.ylimits = [0.0, 0.35]
+    plotaxes.ylimits = [-speed_limits[1], speed_limits[1]]
     plotaxes.grid = True
     plotaxes.afteraxes = lambda cd: compute_max(cd, field=1)
 
-    plotitem = plotaxes.new_plotitem(plot_type="1d_from_2d_data")
-    plotitem.map_2d_to_1d = lambda cd: transect(cd, field=1)
-    plotitem.plotstyle = "ko-"
-    plotitem.kwargs = {"markersize": 3}
+    # plotitem = plotaxes.new_plotitem(plot_type="1d_from_2d_data")
+    # plotitem.map_2d_to_1d = lambda cd: transect(cd, field=1)
+    # plotitem.plotstyle = "ko-"
+    # plotitem.kwargs = {"markersize": 3}
 
     plotitem = plotaxes.new_plotitem(plot_type="1d_from_2d_data")
     plotitem.map_2d_to_1d = lambda cd: transect(cd, field=-1)
