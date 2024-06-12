@@ -57,13 +57,17 @@ MODULES = \
 SOURCES = \
   $(RIEMANN)/rpt2_geoclaw.f \
   $(RIEMANN)/geoclaw_riemann_utils.f \
-  ../rpn2_geoclaw.f \
   ../setprob.f90 \
   ../src2.f90 \
   ./bc2amr.f90 \
   ./setaux.f90 \
   ./qinit.f90 \
-  ./b4step2.f90
+  ./b4step2.f90 \
+  ../rpn2_shallow_fwave.f90
+  
+  
+
+
 
 
 
