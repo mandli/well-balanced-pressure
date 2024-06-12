@@ -88,6 +88,8 @@
 subroutine bc2amr(val,aux,nrow,ncol,meqn,naux, hx, hy, level, time,   &
                   xlo_patch, xhi_patch, ylo_patch, yhi_patch) 
 
+    use geoclaw_module, only: g => grav
+
     use amr_module, only: mthbc, xlower, ylower, xupper, yupper
     use amr_module, only: xperdom,yperdom,spheredom
 
@@ -129,7 +131,7 @@ subroutine bc2amr(val,aux,nrow,ncol,meqn,naux, hx, hy, level, time,   &
                 do j = 1, ncol
                     do i=1, nxl
                         aux(:, i, j) = aux(:, nxl + 1, j)
-                        val(1, i, j) = 1.d0
+                        val(1, i, j) = val(1, nxl + 1, j) - (val(2, nxl + 1, j) - 0.15d0) / sqrt(g * val(1, nxl + 1, j))
                         val(2, i, j) = 0.15d0
                         val(3, i, j) = 0.d0
                     end do
