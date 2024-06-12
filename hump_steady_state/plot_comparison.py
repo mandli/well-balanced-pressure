@@ -51,7 +51,7 @@ if __name__ == '__main__':
                                                 "well-balanced-pressure", 
                                                 "hump"))
     for dimensional in [True, False]:
-        fig, axs = plt.subplots(2, 2)
+        fig, axs = plt.subplots(2, 2, layout='constrained')
         fig.set_figwidth(fig.get_figwidth() * 2)
         fig.set_figheight(fig.get_figheight() * 2)
         plot_comparison(base_path, axs[0, 0], dimensional=dimensional, 
