@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # encoding: utf-8
 """
 Module to set up run time parameters for Clawpack.
@@ -89,7 +90,7 @@ def setrun(claw_pkg="geoclaw"):
 
     # Lower and upper edge of computational domain:
     clawdata.lower[0] = -500e3
-    clawdata.upper[0] = 500e3 * 2
+    clawdata.upper[0] = 1000e3
 
     clawdata.lower[1] = -500e3
     clawdata.upper[1] = 500e3
@@ -394,8 +395,8 @@ def setgeo(rundata):
     topo_data.x1 = rundata.clawdata.lower[0] + 2e8
     topo_data.x2 = rundata.clawdata.lower[0] + 3e8
 
-    topo_data.basin_depth = -1000.0
-    topo_data.shelf_depth = -1000.0
+    topo_data.basin_depth = -100.0
+    topo_data.shelf_depth = -100.0
     topo_data.beach_slope = 0.05
 
     # Indexing
@@ -468,7 +469,7 @@ def setgeo(rundata):
 
     # Pressure source term splitting
     rundata.add_data(SplittingData(), "splitting_data")
-    rundata.splitting_data.split_forcing = True
+    rundata.splitting_data.split_forcing = False
     rundata.splitting_data.test_type = "pressure"
 
     return rundata

@@ -10,10 +10,6 @@ import clawpack.geoclaw.topotools as topotools
 
 days2seconds = lambda days: days * 60.0**2 * 24.0
 
-# def eta(x, y, A=1.0, sigma=50e3, x0=0.0):
-#     return A * numpy.exp(-(x - x0)**2 / sigma**2)
-
-
 class SplitSourceJob(batch.batch.Job):
     r""""""
 
@@ -37,7 +33,7 @@ class SplitSourceJob(batch.batch.Job):
 
         self.rundata.splitting_data.split_forcing = self.split_forcing
         self.rundata.clawdata.num_cells[0] = 300 * self.ratio
-        self.rundata.clawdata.num_cells[1] = 100 * self.ratio
+        self.rundata.clawdata.num_cells[1] = 200 * self.ratio
         self.rundata.topo_data.basin_depth = float(-self.depth)
 
     def __str__(self):
@@ -59,9 +55,8 @@ if __name__ == '__main__':
 
     jobs = []
     for split in [True, False]:
-        for ratio in [1, 2, 3]:
-            for depth in [500, 1000, 2000, 3000]:
-                jobs.append(SplitSourceJob(split=split, ratio=ratio, depth=depth))
+        for depth in [50, 100, 200]:
+            jobs.append(SplitSourceJob(split=split, depth=depth))
 
     controller = batch.batch.BatchController(jobs)
     controller.wait = True

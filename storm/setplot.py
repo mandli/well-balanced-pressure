@@ -60,7 +60,7 @@ def setplot(plotdata=None):
     # Color limits
     surface_limits = [-1, 1]
     H = 1000.0
-    speed_limits = [0.0, 1.0]
+    speed_limits = [-0.005, 0.016]
     pressure_limits = [935, 1013]
 
     def friction_after_axes(cd):
@@ -71,7 +71,6 @@ def setplot(plotdata=None):
     # ==========================================================================
     # Surface Figure
     plotfigure = plotdata.new_plotfigure(name="Surface")
-    # plotfigure.kwargs = {"figsize": (6.4 * 2, 4.8)}
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.title = "Surface"
     plotaxes.xlimits = (clawdata.lower[0], clawdata.upper[0])
@@ -85,7 +84,6 @@ def setplot(plotdata=None):
 
     # Speed Figure
     plotfigure = plotdata.new_plotfigure(name="Currents")
-    # plotfigure.kwargs = {"figsize": (6.4 * 2, 4.8)}
     plotfigure.show = True
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.title = "Currents"
@@ -96,6 +94,41 @@ def setplot(plotdata=None):
     surgeplot.add_speed(plotaxes, bounds=speed_limits)
     surgeplot.add_land(plotaxes, bounds=[0.0, 20.0])
     plotaxes.plotitem_dict["speed"].amr_patchedges_show = [0] * 10
+    plotaxes.plotitem_dict["land"].amr_patchedges_show = [0] * 10
+
+    # Velocity figures
+    plotfigure = plotdata.new_plotfigure(name="X-Velocity")
+    plotfigure.show = True
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.title = "X-Velocity"
+    plotaxes.xlimits = (clawdata.lower[0], clawdata.upper[0])
+    plotaxes.ylimits = (clawdata.lower[1], clawdata.upper[1])
+    plotaxes.afteraxes = surge_afteraxes
+    plotitem = plotaxes.new_plotitem(name='x-velocity', plot_type='2d_pcolor')
+    plotitem.plot_var = surgeplot.water_u
+    plotitem.pcolor_cmap = surgeplot.velocity_cmap
+    plotitem.add_colorbar = True
+    plotitem.pcolor_cmin = -max(speed_limits)
+    plotitem.pcolor_cmax = max(speed_limits)
+    plotitem.colorbar_label = "X-Velocity (m/s)"
+    surgeplot.add_land(plotaxes, bounds=[0.0, 20.0])
+    plotaxes.plotitem_dict["land"].amr_patchedges_show = [0] * 10
+
+    plotfigure = plotdata.new_plotfigure(name="Y-Velocity")
+    plotfigure.show = True
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.title = "Y-Velocity"
+    plotaxes.xlimits = (clawdata.lower[0], clawdata.upper[0])
+    plotaxes.ylimits = (clawdata.lower[1], clawdata.upper[1])
+    plotaxes.afteraxes = surge_afteraxes
+    plotitem = plotaxes.new_plotitem(name='y-velocity', plot_type='2d_pcolor')
+    plotitem.plot_var = surgeplot.water_v
+    plotitem.pcolor_cmap = surgeplot.velocity_cmap
+    plotitem.add_colorbar = True
+    plotitem.pcolor_cmin = -max(speed_limits)
+    plotitem.pcolor_cmax = max(speed_limits)
+    plotitem.colorbar_label = "Y-Velocity (m/s)"
+    surgeplot.add_land(plotaxes, bounds=[0.0, 20.0])
     plotaxes.plotitem_dict["land"].amr_patchedges_show = [0] * 10
 
     # Pressure field
@@ -119,22 +152,22 @@ def setplot(plotdata=None):
         ax.set_title(title.format(field, max_value))
 
     def transect(current_data, field=3, y0=0.0):
-        y = current_data.y
+        y = np.ravel(current_data.y)
         dy = current_data.dy
-        index = np.where(abs(y - y0) <= dy / 2.0)[1][0]
+        index = np.where(abs(y - y0) <= dy / 2.0)
+        x = np.ravel(current_data.x)[index]
         if field < 0:
             # Extract velocity
-            h = current_data.q[0, :, index]
-            hu = current_data.q[abs(field), :, index]
-            u = np.where(h > 1e-3, hu / h, np.zeros(h.shape))
-            return current_data.x[:, index], u
+            h = np.ravel(current_data.q[0, :, :])[index]
+            hu = np.ravel(current_data.q[abs(field), :, :])[index]
+            return x, np.where(h > 1e-3, hu / h, np.zeros(h.shape))
         elif field == 4:
-            # Plot topography
-            h = current_data.q[0, :, index]
-            eta = current_data.q[3, :, index]
-            return current_data.x[:, index], eta - h
+            # Plot bathymetry
+            h = np.ravel(current_data.q[0, :, :])[index]
+            eta = np.ravel(current_data.q[3, :, :])[index]
+            return x, eta - h
         else:
-            return current_data.x[:, index], current_data.q[field, :, index]
+            return x, np.ravel(current_data.q[field, :, :])[index]
 
     # === Surface/Topography ===
     plotfigure = plotdata.new_plotfigure(name="Surface Transect")
@@ -183,15 +216,24 @@ def setplot(plotdata=None):
     plotaxes.xlabel = "x (m)"
     plotaxes.ylabel = r"$hu$"
     plotaxes.xlimits = [clawdata.lower[0], clawdata.upper[0]]
-    plotaxes.ylimits = [-speed_limits[1], speed_limits[1]]
+    # plotaxes.ylimits = [-speed_limits[1], speed_limits[1]]
     plotaxes.grid = True
     plotaxes.afteraxes = lambda cd: compute_max(cd, field=1)
+    plotitem = plotaxes.new_plotitem(plot_type="1d_from_2d_data")
+    plotitem.map_2d_to_1d = lambda cd: transect(cd, field=1)
+    plotitem.plotstyle = "ko-"
+    plotitem.kwargs = {"markersize": 3}
 
-    # plotitem = plotaxes.new_plotitem(plot_type="1d_from_2d_data")
-    # plotitem.map_2d_to_1d = lambda cd: transect(cd, field=1)
-    # plotitem.plotstyle = "ko-"
-    # plotitem.kwargs = {"markersize": 3}
-
+    plotfigure = plotdata.new_plotfigure(name="X-Velocity Transect")
+    plotfigure.show = True
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.title = r"X-Velocity Transect - $\max |u|$"
+    plotaxes.xlabel = "x (m)"
+    plotaxes.ylabel = r"$hu$"
+    plotaxes.xlimits = [clawdata.lower[0], clawdata.upper[0]]
+    plotaxes.ylimits = speed_limits
+    plotaxes.grid = True
+    plotaxes.afteraxes = lambda cd: compute_max(cd, field=-1)
     plotitem = plotaxes.new_plotitem(plot_type="1d_from_2d_data")
     plotitem.map_2d_to_1d = lambda cd: transect(cd, field=-1)
     plotitem.plotstyle = "bx-"
