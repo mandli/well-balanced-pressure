@@ -53,7 +53,7 @@ MODULES = \
 SOURCES = \
   ../setprob.f90 \
   ../src2.f90 \
-  ../rpn2_geoclaw.f \
+  ../rpn2_shallow_fwave.f90 \
   $(RIEMANN)/rpt2_geoclaw.f \
   $(RIEMANN)/geoclaw_riemann_utils.f
 
